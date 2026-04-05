@@ -1,6 +1,6 @@
 import { useSyncExternalStore } from 'react'
 
-/** Subscreve `matchMedia` (cliente); no servidor assume false. */
+/** Subscribe to `matchMedia` on the client; server snapshot is false. */
 export function useMediaQuery(query: string): boolean {
   return useSyncExternalStore(
     (onStoreChange) => {

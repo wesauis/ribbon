@@ -7,7 +7,7 @@ type Props = {
   knownTagNames: string[]
   onChange: (next: Media) => void
   onClose: () => void
-  /** Remove esta mídia da base e fecha o diálogo (após confirmação). */
+  /** Delete this media from the store and close the dialog (after confirmation). */
   onDelete: () => void
 }
 
@@ -21,7 +21,7 @@ function ensureTrailingTagRow(tags: Tag[]): Tag[] {
   return out
 }
 
-/** Índice da última tag com nome não vazio; -1 se não houver nenhuma. */
+/** Index of the last tag with a non-empty name, or -1 if none. */
 function lastTagNameIndex(tags: Tag[]): number {
   let last = -1
   for (let i = 0; i < tags.length; i++) {
@@ -36,9 +36,9 @@ function scrollFieldIntoView(el: HTMLElement | null) {
 }
 
 /**
- * Formulário de edição de uma mídia (nome, dias, tags) no diálogo modal.
- * Foco inicial: nome vazio → nome; nome preenchido sem tags com nome → campo “nome” da nova tag;
- * com pelo menos uma tag nomeada → valor da última tag nomeada.
+ * Edit media (name, weekdays, tags) in a modal dialog.
+ * Initial focus: empty name → name field; name set but no named tags → new tag name;
+ * otherwise → value of the last named tag.
  */
 export function MediaEditor({
   media,
@@ -77,7 +77,8 @@ export function MediaEditor({
       el?.focus()
       scrollFieldIntoView(el)
     })
-    /* Intencionalmente só na montagem: evita roubar o foco ao editar campos. */
+    /* Mount only: avoid stealing focus while editing fields. */
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- initial focus only on mount
   }, [])
 
   const update = (next: Media) => {
@@ -95,7 +96,7 @@ export function MediaEditor({
     update({ ...media, weekdays: ws })
   }
 
-  /** Aplica alteração numa célula de tag; retorna false se o nome for duplicado (só coluna nome). */
+  /** Apply a tag cell change; returns false if the name duplicates another row (name column only). */
   const setTag = (i: number, col: 0 | 1, val: string): boolean => {
     const tags = media.tags.map((row, j) =>
       j === i ? (col === 0 ? ([val, row[1]] as Tag) : ([row[0], val] as Tag)) : row,
@@ -114,8 +115,8 @@ export function MediaEditor({
   }
 
   /**
-   * Nome da tag igual a uma opção conhecida (ex.: escolha na datalist) e valor vazio:
-   * passa o foco para o valor para continuar a edição sem clique extra.
+   * When the tag name matches a known option (e.g. datalist pick) and the value is empty,
+   * move focus to the value field so editing can continue without an extra click.
    */
   const onTagNameChange = (i: number, e: React.ChangeEvent<HTMLInputElement>) => {
     const val = e.target.value
@@ -202,7 +203,7 @@ export function MediaEditor({
               value={row[0]}
               onChange={(e) => onTagNameChange(i, e)}
               onFocus={() => {
-                /* datalist mostra opções ao focar no Chrome */
+                /* Chrome shows datalist options on focus */
               }}
               onKeyDown={(e) => onTagNameKeyDown(e, i)}
             />

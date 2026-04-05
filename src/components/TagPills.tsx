@@ -8,21 +8,21 @@ import { useMediaQuery } from '../hooks/useMediaQuery'
 
 type Props = {
   media: Media
-  /** Classe extra no contentor (ex. alinhamento na lista de busca). */
+  /** Extra class on the container (e.g. alignment in search results). */
   className?: string
   /**
-   * Em viewports estreitas, abrevia o **nome** a 1 carácter; o **valor** mantém-se sempre completo.
+   * On narrow viewports, abbreviate the tag **name** to one character; **value** stays fully visible.
    */
   abbreviateTagNamesMobile?: boolean
 }
 
-/** Até duas tags com nome não vazio, em formato pill. */
+/** Up to two tags with non-empty names, rendered as pills. */
 export function TagPills({
   media,
   className = '',
   abbreviateTagNamesMobile = false,
 }: Props) {
-  /* Alinha com layouts “mobile” da app (ex. grelha a 2 colunas em ≤900px). */
+  /* Match app “mobile” layouts (e.g. week grid at 2 columns for ≤900px). */
   const narrow = useMediaQuery('(max-width: 900px)')
   const useAbbrev = abbreviateTagNamesMobile && narrow
 

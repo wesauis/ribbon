@@ -2,7 +2,7 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
-/** Em GitHub Pages (site de projeto), use `VITE_BASE=/nome-do-repo/` antes do build. */
+/** For GitHub Pages project sites, set `VITE_BASE=/repo-name/` before build. */
 const base = process.env.VITE_BASE ?? '/'
 
 // https://vite.dev/config/

@@ -1,5 +1,5 @@
 /**
- * Busca difusa (Fuse.js) em nome e tags; desempate pelo índice no array (ordem do ficheiro).
+ * Fuzzy search (Fuse.js) over name and tags; ties break by array index (file order).
  */
 import Fuse from 'fuse.js'
 import type { Media } from '../types/media'
@@ -22,7 +22,7 @@ function withIndex(medias: Media[]): MediaWithIndex[] {
   }))
 }
 
-/** Fuzzy na lista; empate de score desempata pelo índice menor (ordem do ficheiro). */
+/** Fuzzy search; equal scores sort by lower index (file order). */
 export function fuzzySearchMedias(
   medias: Media[],
   query: string,

@@ -1,7 +1,7 @@
 /**
- * Leitura/escrita de ficheiros JSON Lines (https://jsonlines.org/) com extensão `.jsonl`.
- * Cada linha é um objeto JSON; valores "vazios" são omitidos na escrita para manter o ficheiro compacto.
- * Ordem do array `medias` é a ordem das linhas no ficheiro.
+ * Read/write JSON Lines (https://jsonlines.org/) `.jsonl` files.
+ * Each line is one JSON object; empty-ish fields are omitted on write to keep files compact.
+ * `medias` array order matches line order in the file.
  */
 
 import type { Media, Tag } from '../types/media'
@@ -30,10 +30,10 @@ function compactTag(t: Tag): DiskTag | null {
   return [n, v]
 }
 
-/** Constrói objeto JSON serializável com chaves omitidas conforme regras compactas. */
+/** Build a JSON-serializable object with keys omitted per compact-write rules. */
 export function mediaToDiskObject(m: Media): Record<string, unknown> {
   const name = m.name.trim()
-  if (!name) throw new Error('Nome da mídia não pode ser vazio ao gravar.')
+  if (!name) throw new Error('Cannot persist media with empty name.')
   const o: Record<string, unknown> = { name }
   const wd = weekdaysToDisk(m.weekdays)
   if (!isOmitted(wd)) o.weekdays = wd
@@ -58,7 +58,7 @@ function parseTag(raw: unknown): Tag | null {
   return [n, v]
 }
 
-/** Interpreta uma linha do `.jsonl` para `Media` in-memory. */
+/** Parse one `.jsonl` line into an in-memory `Media`. */
 export function parseMediaLine(obj: unknown): Media | null {
   if (typeof obj !== 'object' || obj === null) return null
   const d = obj as DiskMedia
@@ -78,7 +78,7 @@ export function parseMediaLine(obj: unknown): Media | null {
   return { name, weekdays, tags }
 }
 
-/** Divide o texto do ficheiro em registos; linhas inválidas são ignoradas. */
+/** Split file text into records; invalid lines are skipped. */
 export function parseJsonlText(text: string): Media[] {
   const out: Media[] = []
   const lines = text.split(/\r?\n/)
@@ -90,7 +90,7 @@ export function parseJsonlText(text: string): Media[] {
       const m = parseMediaLine(obj)
       if (m) out.push(m)
     } catch {
-      /* linha corrompida: ignora */
+      /* Corrupted line; skip. */
     }
   }
   return out

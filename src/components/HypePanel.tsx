@@ -13,19 +13,19 @@ type Props = {
   medias: Media[]
   onReorder: (next: Media[]) => void
   /**
-   * `dialog`: dentro do modal — títulos completos (várias linhas), sem rank.
-   * O grupo de quantidade fica no cabeçalho do diálogo (App).
+   * `dialog`: inside the modal — full titles (multi-line), no rank badge.
+   * The count control lives in the dialog header (`App`).
    */
   variant?: 'default' | 'dialog'
-  /** No diálogo, definido no cabeçalho (App). */
+  /** In dialog mode, set from the header (`App`). */
   candidateCount?: HypeCount
-  /** Incrementado no App ao clicar no grupo de quantidade — novo lote aleatório. */
+  /** Incremented in `App` when the count group changes — new random batch. */
   candidateNonce?: number
 }
 
 const defaultRng: Rng = () => Math.random()
 
-/** Compara N mídias por ronda; o clique só regista voto e reordena o ficheiro. */
+/** Compare N media items per round; click records a vote and reorders the list. */
 export function HypePanel({
   medias,
   onReorder,
@@ -44,8 +44,10 @@ export function HypePanel({
     return nextHypeCandidates(len, n, null, defaultRng)
   })
 
+  /** Recompute candidate indices when media length or hype controls change. */
   useLayoutEffect(() => {
     if (len < 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- clear batch when list is too short
       setCandidates(null)
       return
     }

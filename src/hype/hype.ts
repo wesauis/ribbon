@@ -1,15 +1,15 @@
 import type { Media } from '../types/media'
 
-/** RNG em [0, 1); injetável para testes. */
+/** RNG in [0, 1); injectable for tests. */
 export type Rng = () => number
 
-/** Quantidades permitidas no comparador Hype. */
+/** Allowed candidate counts in the Hype comparator. */
 export const HYPE_COUNTS = [2, 3, 4, 5] as const
 export type HypeCount = (typeof HYPE_COUNTS)[number]
 
 /**
- * Reordena o array após escolher o favorito entre os candidatos.
- * O melhor rank entre eles é `min(candidatos)`; o escolhido sobe para essa posição.
+ * Reorder the media list after picking a favorite among `candidates`.
+ * The best rank among them is `min(candidates)`; the picked item moves to that slot.
  */
 export function applyHypePick(
   medias: Media[],
@@ -35,7 +35,7 @@ function shuffleInPlace<T>(arr: T[], rng: Rng): void {
 }
 
 /**
- * Escolhe `count` índices distintos em `[0, length)`, excluindo `exclude`.
+ * Pick `count` distinct indices in `[0, length)`, excluding `exclude`.
  */
 export function pickRandomDistinct(
   length: number,
@@ -57,15 +57,14 @@ export function pickRandomDistinct(
 }
 
 /**
- * Próximo lote de índices para comparar.
+ * Next batch of indices to compare.
  *
- * Se `mediaLength > count * 4`, a ronda seguinte **não repete** nenhum dos
- * índices em `previousRoundIndices` (comparação totalmente nova em relação à
- * anterior). Caso contrário (`mediaLength <= count * 4`), permite qualquer
- * amostra aleatória, incluindo repetir itens da ronda anterior.
+ * If `mediaLength > count * 4`, the next round **does not reuse** any index in
+ * `previousRoundIndices` (fully fresh comparison vs. the previous round). Otherwise
+ * (`mediaLength <= count * 4`), any random sample is allowed, including overlap with the prior round.
  *
- * `previousRoundIndices` são os índices no array **atual** (já reordenado) dos
- * itens da ronda anterior; podem ser mais do que `count` se a quantidade mudou.
+ * `previousRoundIndices` are indices in the **current** (already reordered) array for the
+ * previous round’s items; there may be more than `count` if the count setting changed.
  */
 export function nextHypeCandidates(
   mediaLength: number,
@@ -74,10 +73,10 @@ export function nextHypeCandidates(
   rng: Rng,
 ): number[] {
   if (count < 2 || count > 5) {
-    throw new Error('nextHypeCandidates: count deve estar entre 2 e 5')
+    throw new Error('nextHypeCandidates: count must be between 2 and 5')
   }
   if (mediaLength < count) {
-    throw new Error('nextHypeCandidates: nem mídias suficientes para esta quantidade')
+    throw new Error('nextHypeCandidates: not enough media entries for this count')
   }
 
   const mustDisjoint = mediaLength > count * 4
@@ -106,7 +105,7 @@ export function isValidHypeCandidates(
   return indices.every((i) => i >= 0 && i < mediaLength)
 }
 
-/** Quantidade efetiva (respeita `len` e o intervalo 2–5). */
+/** Effective count (clamped by `len` and the 2–5 range). */
 export function effectiveHypeCount(
   preferred: HypeCount,
   mediaLength: number,

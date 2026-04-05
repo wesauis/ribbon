@@ -1,7 +1,7 @@
 /**
- * Modelo de mídia e dias da semana (pt-BR, 3 letras, maiúsculas).
- * Persistência: JSON Lines (https://jsonlines.org/) em ficheiro `.jsonl` local;
- * o Service Worker só faz precache do SPA, não do `.jsonl`.
+ * Media model and weekday tokens (pt-BR UI: three letters, uppercase).
+ * Persistence: JSON Lines (https://jsonlines.org/) in a local `.jsonl` file;
+ * the service worker precaches only the SPA shell, not the `.jsonl`.
  */
 export const WEEKDAYS_ORDER = [
   'DOM',
@@ -17,13 +17,13 @@ export type Weekday = (typeof WEEKDAYS_ORDER)[number]
 
 const WEEKDAY_SET = new Set<string>(WEEKDAYS_ORDER)
 
-/** Valida e normaliza token de dia; tokens desconhecidos são ignorados. */
+/** Parse and normalize a weekday token; unknown tokens are ignored. */
 export function parseWeekdayToken(raw: string): Weekday | null {
   const t = raw.trim().toUpperCase()
   return WEEKDAY_SET.has(t) ? (t as Weekday) : null
 }
 
-/** Converte string persistida "SEG,DOM" para Set. */
+/** Load persisted string `"SEG,DOM"` into a `Set`. */
 export function weekdaysFromDisk(s: string | undefined): Set<Weekday> {
   const out = new Set<Weekday>()
   if (!s?.trim()) return out
@@ -34,7 +34,7 @@ export function weekdaysFromDisk(s: string | undefined): Set<Weekday> {
   return out
 }
 
-/** Converte Set para string persistida; ordem segue WEEKDAYS_ORDER. */
+/** Serialize `Set` to persisted string; order follows `WEEKDAYS_ORDER`. */
 export function weekdaysToDisk(ws: Set<Weekday>): string {
   const list = WEEKDAYS_ORDER.filter((d) => ws.has(d))
   return list.join(',')
@@ -60,7 +60,7 @@ export function cloneMedia(m: Media): Media {
   }
 }
 
-/** Texto curto para UI: nome da tag e valor se existir. */
+/** Short label for UI: tag name and value when present. */
 export function formatTagLabel(t: Tag): string {
   const nt = t[0].trim()
   const vt = t[1].trim()
@@ -69,7 +69,7 @@ export function formatTagLabel(t: Tag): string {
   return nt
 }
 
-/** Primeiras tags com nome não vazio, no máximo `max` (ex.: 2 para pills). */
+/** First tags with non-empty name, at most `max` (e.g. 2 for pills). */
 export function firstDisplayTags(media: Media, max = 2): string[] {
   const out: string[] = []
   for (const row of media.tags) {
@@ -81,7 +81,7 @@ export function firstDisplayTags(media: Media, max = 2): string[] {
   return out
 }
 
-/** Primeiro carácter do nome da tag (Unicode), para abreviatura em ecrãs estreitos. */
+/** First Unicode code point of the tag name (for narrow layouts). */
 export function firstCharOfTagName(tag: Tag): string {
   const nt = tag[0].trim()
   if (!nt) return ''
@@ -89,7 +89,7 @@ export function firstCharOfTagName(tag: Tag): string {
 }
 
 /**
- * Pill compacta: só o 1.º carácter do nome; se houver valor, mostra-o **inteiro** após `:`.
+ * Compact pill text: first character of the name only; if a value exists, show it in full after `:`.
  */
 export function compactTagPillText(tag: Tag): string {
   const nt = tag[0].trim()
@@ -101,7 +101,7 @@ export function compactTagPillText(tag: Tag): string {
 }
 
 /**
- * Pills compactas (ex.: ranking em mobile): nome abreviado a 1 carácter; valor sempre completo.
+ * Compact pills (e.g. ranking on narrow viewports): abbreviated name; value always shown in full.
  */
 export function firstDisplayTagAbbrevs(
   media: Media,

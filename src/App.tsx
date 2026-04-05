@@ -1,6 +1,6 @@
 /**
- * Shell da aplicação: escolha do ficheiro `.jsonl`, lista de mídias e diálogo de edição.
- * Chrome + File System Access API; o Service Worker (vite-plugin-pwa) só faz precache do SPA.
+ * App shell: pick `.jsonl` file, media list, and edit dialog.
+ * Chrome + File System Access API; the service worker (vite-plugin-pwa) precaches only the SPA.
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
@@ -62,7 +62,7 @@ export default function App() {
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [appView, setAppView] = useState<AppView>('week')
   const [hypeCandidateCount, setHypeCandidateCount] = useState<HypeCount>(2)
-  /** Incrementa ao escolher quantidade no grupo — força novo lote de candidatos. */
+  /** Bumped when the hype count control changes — forces a new candidate batch. */
   const [hypeCandidateNonce, setHypeCandidateNonce] = useState(0)
 
   const persist = useCallback(

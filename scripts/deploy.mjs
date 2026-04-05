@@ -1,13 +1,13 @@
 #!/usr/bin/env node
 /**
- * Deploy manual para GitHub Pages: build com base do repositório e push de `dist` para o ramo `gh-pages`.
+ * Manual GitHub Pages deploy: build with repo base path and push `dist` to `gh-pages`.
  *
- * Uso:
+ * Usage:
  *   npm run deploy
- *   npm run deploy -- meu-repo
- *   GITHUB_REPOSITORY=org/meurepo npm run deploy
+ *   npm run deploy -- my-repo
+ *   GITHUB_REPOSITORY=org/myrepo npm run deploy
  *
- * O nome do repositório define VITE_BASE=/nome/ (obrigatório para o site em user.github.io/nome/).
+ * The repo name sets `VITE_BASE=/name/` (required for `user.github.io/name/` project pages).
  */
 import { execSync } from 'node:child_process'
 import process from 'node:process'

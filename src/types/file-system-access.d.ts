@@ -1,5 +1,5 @@
 /**
- * Tipos mínimos para a File System Access API (Chrome).
+ * Minimal typings for the File System Access API (Chrome).
  * @see https://developer.mozilla.org/en-US/docs/Web/API/File_System_Access_API
  */
 

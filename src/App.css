@@ -1,5 +1,5 @@
 /**
- * Barras de scroll alinhadas ao tema escuro da app.
+ * Scrollbars aligned with the app dark theme.
  * Firefox: scrollbar-width + scrollbar-color (https://developer.mozilla.org/docs/Web/CSS/scrollbar-color).
  * Chrome/Safari/Edge: https://developer.mozilla.org/docs/Web/CSS/::-webkit-scrollbar
  */
@@ -192,8 +192,8 @@
 }
 
 /**
- * O `<dialog>` fechado usa `display: none` no UA; qualquer `display` na classe
- * substitui isso e o painel fica sempre visível — só aplicar flex quando [open].
+ * A closed `<dialog>` uses `display: none` in the UA; any `display` on the class
+ * overrides that and keeps the panel visible — only apply flex when [open].
  */
 .app__dialog:not([open]) {
   display: none;
@@ -207,7 +207,7 @@
   color: inherit;
   width: min(520px, calc(100vw - 1.5rem));
   max-width: min(520px, 100vw - 2rem);
-  /* Altura visível com teclado (dvh); conteúdo rola só se não couber. */
+  /* Visible height with on-screen keyboard (dvh); content scrolls only if needed. */
   max-height: min(92dvh, calc(100dvh - 1.5rem));
   margin: auto;
   overflow: hidden;
@@ -395,7 +395,7 @@
   white-space: nowrap;
 }
 
-/* Nome abreviado + valor completo: não truncar o valor (pode quebrar linha na célula). */
+/* Abbreviated name + full value: do not truncate the value (may wrap in the cell). */
 .tag-pills__pill--abbr {
   white-space: normal;
   overflow: visible;

@@ -7,8 +7,8 @@ type Props = {
 }
 
 /**
- * Lista todas as mídias na ordem do ficheiro com rank global (#1 … #n).
- * Clicar abre o editor (igual à grelha semanal). Sem título — o separador já indica a vista.
+ * All media in file order with global rank (#1 … #n).
+ * Click opens the editor (same as the week grid). No section title — the tab indicates the view.
  */
 export function MediaRankList({ medias, onEditMedia }: Props) {
   if (medias.length === 0) {
