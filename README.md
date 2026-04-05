@@ -1,73 +1,28 @@
-# React + TypeScript + Vite
+# Ribbon
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+> Try now at: https://wesauis.github.io/ribbon
 
-Currently, two official plugins are available:
+Local-first web app to manage a small catalog of **media entries** (name, weekdays, tags) stored in a **JSON Lines** (`.jsonl`) file on your machine. Uses the **File System Access API** (Chromium browsers) so data stays on disk, not on a server.
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+**Stack:** React 19, TypeScript, Vite, Fuse.js (search), PWA plugin (offline shell only—the `.jsonl` file is never precached).
 
-## React Compiler
+For conventions, JSONL details, and commit style, see [`AGENTS.md`](./AGENTS.md).
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## Development
 
-## Expanding the ESLint configuration
+Requirements: **Node.js** (current LTS is fine) and **npm**.
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
-
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
+```bash
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
+- **`npm run dev`** — Vite dev server with HMR  
+- **`npm run build`** — TypeScript check + production bundle (`dist/`)  
+- **`npm run lint`** — ESLint  
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
+Open the app in **Chrome** (or another Chromium browser), pick or create a `.jsonl` file, then edit entries from the week grid, ranking list, or search.
 
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-```
+## Deploy (optional)
+
+GitHub Pages example: set `VITE_BASE=/your-repo-name/` for project pages, then run `npm run deploy` (see `scripts/deploy.mjs`).
