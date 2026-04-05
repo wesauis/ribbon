@@ -235,7 +235,9 @@
 
 .media-editor__actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
   margin-top: 0.25rem;
 }
 
@@ -245,4 +247,14 @@
   border: 1px solid #3a3a52;
   background: #252532;
   color: inherit;
+}
+
+.media-editor__delete {
+  border-color: #6a2a2a !important;
+  background: #2a1518 !important;
+  color: #f0a8a8 !important;
+}
+
+.media-editor__delete:hover {
+  background: #3a1e22 !important;
 }

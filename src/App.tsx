@@ -129,6 +129,17 @@ export default function App() {
     updateMediaAt(editingIndex, next)
   }
 
+  const onDeleteMedia = () => {
+    if (editingIndex === null || fileHandle === null) return
+    const idx = editingIndex
+    setMedias((prev) => {
+      const next = prev.filter((_, i) => i !== idx)
+      void persist(next)
+      return next
+    })
+    setEditingIndex(null)
+  }
+
   const knownTags = knownTagNamesFromMedias(medias)
 
   if (fileHandle === null) {
@@ -177,6 +188,7 @@ export default function App() {
             media={editingMedia}
             knownTagNames={knownTags}
             onChange={onEditorChange}
+            onDelete={onDeleteMedia}
             onClose={() => {
               dialogRef.current?.close()
             }}

@@ -7,6 +7,8 @@ type Props = {
   knownTagNames: string[]
   onChange: (next: Media) => void
   onClose: () => void
+  /** Remove esta mídia da base e fecha o diálogo (após confirmação). */
+  onDelete: () => void
 }
 
 function ensureTrailingTagRow(tags: Tag[]): Tag[] {
@@ -24,6 +26,7 @@ export function MediaEditor({
   knownTagNames,
   onChange,
   onClose,
+  onDelete,
 }: Props) {
   const datalistId = useId()
   const nameRef = useRef<HTMLInputElement>(null)
@@ -163,6 +166,17 @@ export function MediaEditor({
       </div>
 
       <div className="media-editor__actions">
+        <button
+          type="button"
+          className="media-editor__delete"
+          onClick={() => {
+            if (window.confirm('Apagar esta mídia? Esta ação não pode ser desfeita.')) {
+              onDelete()
+            }
+          }}
+        >
+          Apagar
+        </button>
         <button type="button" onClick={onClose}>
           Fechar
         </button>
