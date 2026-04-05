@@ -34,7 +34,11 @@ export function MediaRankList({ medias, onEditMedia }: Props) {
             >
               <span className="media-rank-list__rank">#{index + 1}</span>
               <span className="media-rank-list__name">{m.name}</span>
-              <TagPills media={m} className="tag-pills--end" />
+              <TagPills
+                media={m}
+                className="tag-pills--end"
+                abbreviateTagNamesMobile
+              />
             </button>
           </li>
         ))}

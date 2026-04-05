@@ -80,3 +80,42 @@ export function firstDisplayTags(media: Media, max = 2): string[] {
   }
   return out
 }
+
+/** Primeiro carácter do nome da tag (Unicode), para abreviatura em ecrãs estreitos. */
+export function firstCharOfTagName(tag: Tag): string {
+  const nt = tag[0].trim()
+  if (!nt) return ''
+  return Array.from(nt)[0] ?? ''
+}
+
+/**
+ * Pill compacta: só o 1.º carácter do nome; se houver valor, mostra-o **inteiro** após `:`.
+ */
+export function compactTagPillText(tag: Tag): string {
+  const nt = tag[0].trim()
+  const vt = tag[1].trim()
+  if (!nt) return ''
+  const abbrev = firstCharOfTagName(tag)
+  if (!vt) return abbrev
+  return `${abbrev}: ${vt}`
+}
+
+/**
+ * Pills compactas (ex.: ranking em mobile): nome abreviado a 1 carácter; valor sempre completo.
+ */
+export function firstDisplayTagAbbrevs(
+  media: Media,
+  max = 2,
+): { displayText: string; ariaLabel: string }[] {
+  const out: { displayText: string; ariaLabel: string }[] = []
+  for (const row of media.tags) {
+    const ariaLabel = formatTagLabel(row)
+    if (!ariaLabel) continue
+    out.push({
+      displayText: compactTagPillText(row),
+      ariaLabel,
+    })
+    if (out.length >= max) break
+  }
+  return out
+}

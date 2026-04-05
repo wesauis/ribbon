@@ -395,6 +395,14 @@
   white-space: nowrap;
 }
 
+/* Nome abreviado + valor completo: não truncar o valor (pode quebrar linha na célula). */
+.tag-pills__pill--abbr {
+  white-space: normal;
+  overflow: visible;
+  text-overflow: clip;
+  word-break: break-word;
+}
+
 .hype-panel {
   border: 1px solid #2a2a3a;
   border-radius: 8px;
