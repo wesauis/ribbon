@@ -4,7 +4,9 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
+import { HypePanel } from './components/HypePanel'
 import { MediaEditor } from './components/MediaEditor'
+import { MediaRankList } from './components/MediaRankList'
 import { MediaSearch } from './components/MediaSearch'
 import { WeekGrid } from './components/WeekGrid'
 import {
@@ -14,6 +16,11 @@ import {
 import type { FilePickerAcceptType } from './types/file-system-access'
 import type { Media } from './types/media'
 import { emptyMedia } from './types/media'
+import {
+  effectiveHypeCount,
+  HYPE_COUNTS,
+  type HypeCount,
+} from './hype/hype'
 
 const JSONL_TYPES: FilePickerAcceptType[] = [
   {
@@ -43,13 +50,20 @@ function knownTagNamesFromMedias(medias: Media[]): string[] {
   return [...s]
 }
 
+type AppView = 'week' | 'ranking'
+
 export default function App() {
   const dialogRef = useRef<HTMLDialogElement>(null)
+  const hypeDialogRef = useRef<HTMLDialogElement>(null)
   const [fileHandle, setFileHandle] = useState<FileSystemFileHandle | null>(
     null,
   )
   const [medias, setMedias] = useState<Media[]>([])
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [appView, setAppView] = useState<AppView>('week')
+  const [hypeCandidateCount, setHypeCandidateCount] = useState<HypeCount>(2)
+  /** Incrementa ao escolher quantidade no grupo — força novo lote de candidatos. */
+  const [hypeCandidateNonce, setHypeCandidateNonce] = useState(0)
 
   const persist = useCallback(
     async (next: Media[]) => {
@@ -57,6 +71,14 @@ export default function App() {
       await writeMediasToHandle(fileHandle, next)
     },
     [fileHandle],
+  )
+
+  const onHypeReorder = useCallback(
+    (next: Media[]) => {
+      setMedias(next)
+      void persist(next)
+    },
+    [persist],
   )
 
   const loadFromHandle = useCallback(async (handle: FileSystemFileHandle) => {
@@ -94,6 +116,18 @@ export default function App() {
     }
   }, [editingIndex])
 
+  useEffect(() => {
+    if (appView === 'week') {
+      hypeDialogRef.current?.close()
+    }
+  }, [appView])
+
+  useEffect(() => {
+    if (medias.length < 2) {
+      hypeDialogRef.current?.close()
+    }
+  }, [medias.length])
+
   const onDialogClose = () => {
     setEditingIndex(null)
   }
@@ -111,6 +145,7 @@ export default function App() {
 
   const onOpenCreate = (nameFromQuery: string) => {
     if (fileHandle === null) return
+    hypeDialogRef.current?.close()
     const nm = newMediaFromQuery(nameFromQuery)
     setMedias((prev) => {
       const next = [...prev, nm]
@@ -121,6 +156,7 @@ export default function App() {
   }
 
   const onOpenMedia = (index: number) => {
+    hypeDialogRef.current?.close()
     setEditingIndex(index)
   }
 
@@ -167,15 +203,138 @@ export default function App() {
   return (
     <div className="app">
       <header className="app__header">
-        <h1 className="app__title">Ribbon</h1>
-        <MediaSearch
-          medias={medias}
-          onOpenCreate={onOpenCreate}
-          onOpenMedia={onOpenMedia}
-        />
+        <div className="app__header-brand">
+          <h1 className="app__title">Ribbon</h1>
+          <div
+            className="app__view-toggle"
+            role="tablist"
+            aria-label="Vista principal"
+          >
+            <button
+              type="button"
+              role="tab"
+              id="tab-week"
+              aria-selected={appView === 'week'}
+              aria-controls="app-main-panel"
+              className={
+                appView === 'week'
+                  ? 'app__view-toggle-btn is-active'
+                  : 'app__view-toggle-btn'
+              }
+              onClick={() => setAppView('week')}
+            >
+              Semana
+            </button>
+            <button
+              type="button"
+              role="tab"
+              id="tab-ranking"
+              aria-selected={appView === 'ranking'}
+              aria-controls="app-main-panel"
+              className={
+                appView === 'ranking'
+                  ? 'app__view-toggle-btn is-active'
+                  : 'app__view-toggle-btn'
+              }
+              onClick={() => setAppView('ranking')}
+            >
+              Ranking
+            </button>
+          </div>
+        </div>
+        <div className="app__header-search">
+          <button
+            type="button"
+            className="app__ranking-hype-btn"
+            aria-label="Hype"
+            title={
+              medias.length < 2
+                ? 'São necessárias pelo menos 2 mídias'
+                : 'Hype'
+            }
+            disabled={medias.length < 2}
+            onClick={() => hypeDialogRef.current?.showModal()}
+          >
+            👑
+          </button>
+          <MediaSearch
+            medias={medias}
+            onOpenCreate={onOpenCreate}
+            onOpenMedia={onOpenMedia}
+          />
+        </div>
       </header>
 
-      <WeekGrid medias={medias} onEditMedia={onOpenMedia} />
+      <main
+        id="app-main-panel"
+        role="tabpanel"
+        aria-labelledby={appView === 'week' ? 'tab-week' : 'tab-ranking'}
+        className="app__main"
+      >
+        {appView === 'week' ? (
+          <WeekGrid medias={medias} onEditMedia={onOpenMedia} />
+        ) : (
+          <div className="app__ranking-view">
+            <MediaRankList medias={medias} onEditMedia={onOpenMedia} />
+          </div>
+        )}
+      </main>
+
+      <dialog
+        ref={hypeDialogRef}
+        className="app__dialog app__dialog--hype"
+        aria-labelledby="hype-dialog-title"
+      >
+        <div className="hype-dialog__chrome">
+          <header className="hype-dialog__header">
+            <h2 id="hype-dialog-title" className="hype-dialog__title">
+              Hype
+            </h2>
+            <span className="hype-dialog__header-spacer" aria-hidden />
+            <div
+              className="hype-panel__count-toggle"
+              role="group"
+              aria-label="Quantidade a comparar"
+            >
+              {HYPE_COUNTS.map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  className={
+                    effectiveHypeCount(hypeCandidateCount, medias.length) === n
+                      ? 'hype-panel__count-btn is-active'
+                      : 'hype-panel__count-btn'
+                  }
+                  disabled={medias.length < n}
+                  onClick={() => {
+                    setHypeCandidateCount(n)
+                    setHypeCandidateNonce((k) => k + 1)
+                  }}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+            <button
+              type="button"
+              className="hype-dialog__close"
+              aria-label="Fechar comparador"
+              onClick={() => hypeDialogRef.current?.close()}
+            >
+              ×
+            </button>
+          </header>
+          <div className="hype-dialog__body">
+            <HypePanel
+              medias={medias}
+              onReorder={onHypeReorder}
+              variant="dialog"
+              candidateCount={hypeCandidateCount}
+              candidateNonce={hypeCandidateNonce}
+            />
+          </div>
+        </div>
+      </dialog>
 
       <dialog
         ref={dialogRef}

@@ -1,3 +1,37 @@
+/**
+ * Barras de scroll alinhadas ao tema escuro da app.
+ * Firefox: scrollbar-width + scrollbar-color (https://developer.mozilla.org/docs/Web/CSS/scrollbar-color).
+ * Chrome/Safari/Edge: https://developer.mozilla.org/docs/Web/CSS/::-webkit-scrollbar
+ */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #3a4558 #16161f;
+}
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #16161f;
+  border-radius: 8px;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #3a4558;
+  border-radius: 8px;
+  border: 2px solid #16161f;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #4a5568;
+}
+
+*::-webkit-scrollbar-corner {
+  background: #16161f;
+}
+
 .app {
   min-height: 100vh;
   display: flex;
@@ -5,6 +39,7 @@
   padding: 0.75rem 1rem 1.5rem;
   max-width: 1400px;
   margin: 0 auto;
+  box-sizing: border-box;
 }
 
 .app--gate {
@@ -46,6 +81,22 @@
     flex-direction: row;
     align-items: center;
     gap: 1rem;
+    flex-wrap: wrap;
+  }
+}
+
+.app__header-brand {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+@media (min-width: 640px) {
+  .app__header-brand {
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
   }
 }
 
@@ -54,6 +105,98 @@
   font-weight: 600;
   margin: 0;
   flex-shrink: 0;
+}
+
+.app__view-toggle {
+  display: inline-flex;
+  border-radius: 8px;
+  border: 1px solid #3a3a52;
+  overflow: hidden;
+  background: #12121a;
+}
+
+.app__view-toggle-btn {
+  padding: 0.35rem 0.75rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: #a8a8b8;
+  cursor: pointer;
+}
+
+.app__view-toggle-btn:hover {
+  color: #e0e0e8;
+  background: #1e1e2a;
+}
+
+.app__view-toggle-btn.is-active {
+  background: #2a2a3d;
+  color: #e8e8f0;
+}
+
+.app__main {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.app__header-search {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.4rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.app__header-search .media-search {
+  flex: 1;
+  min-width: 0;
+}
+
+.app__ranking-hype-btn {
+  flex-shrink: 0;
+  width: 2.35rem;
+  height: 2.35rem;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  border: 1px solid #3a3a52;
+  background: #16161f;
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  color: inherit;
+}
+
+.app__ranking-hype-btn:hover:not(:disabled) {
+  background: #252532;
+}
+
+.app__ranking-hype-btn:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.app__ranking-view {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+}
+
+/**
+ * O `<dialog>` fechado usa `display: none` no UA; qualquer `display` na classe
+ * substitui isso e o painel fica sempre visível — só aplicar flex quando [open].
+ */
+.app__dialog:not([open]) {
+  display: none;
 }
 
 .app__dialog {
@@ -68,13 +211,95 @@
   max-height: min(92dvh, calc(100dvh - 1.5rem));
   margin: auto;
   overflow: hidden;
+  box-sizing: border-box;
+}
+
+.app__dialog[open] {
   display: flex;
   flex-direction: column;
-  box-sizing: border-box;
+}
+
+.app__dialog--hype {
+  width: min(56rem, calc(100vw - 1.5rem));
+  max-width: min(56rem, 100vw - 2rem);
+}
+
+.hype-dialog__chrome {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+  max-height: min(92dvh, calc(100dvh - 1.5rem));
+}
+
+.hype-dialog__header {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+  padding: 0.6rem 0.75rem 0.6rem 1rem;
+  border-bottom: 1px solid #2a2a3a;
+}
+
+.hype-dialog__header-spacer {
+  flex: 1;
+  min-width: 0.75rem;
+}
+
+.hype-dialog__header .hype-panel__count-toggle {
+  margin-bottom: 0;
+  flex-shrink: 0;
+}
+
+.hype-dialog__title {
+  font-size: 1.05rem;
+  font-weight: 600;
+  margin: 0;
+  flex-shrink: 0;
+}
+
+.hype-dialog__hint {
+  font-size: 0.8rem;
+  color: #a8a8b8;
+  margin: 0;
+  line-height: 1.35;
+  padding-right: 0.25rem;
+}
+
+.hype-dialog__close {
+  flex-shrink: 0;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  color: #c8c8d8;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.hype-dialog__close:hover {
+  background: #2a2a3d;
+}
+
+.hype-dialog__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0.75rem 1rem 1rem;
+  -webkit-overflow-scrolling: touch;
 }
 
 @supports not (height: 100dvh) {
   .app__dialog {
+    max-height: min(92vh, calc(100vh - 2rem));
+  }
+
+  .hype-dialog__chrome {
     max-height: min(92vh, calc(100vh - 2rem));
   }
 }
@@ -168,6 +393,257 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.hype-panel {
+  border: 1px solid #2a2a3a;
+  border-radius: 8px;
+  padding: 0.5rem 0.65rem 0.65rem;
+  background: #16161f;
+  margin-bottom: 1rem;
+}
+
+.hype-panel--dialog {
+  border: none;
+  border-radius: 0;
+  padding: 0;
+  margin: 0;
+  background: transparent;
+}
+
+.hype-panel__count-toggle {
+  display: inline-flex;
+  border-radius: 8px;
+  border: 1px solid #3a3a52;
+  overflow: hidden;
+  background: #12121a;
+  margin-bottom: 0.65rem;
+  align-self: flex-start;
+}
+
+.hype-panel__count-btn {
+  min-width: 2.25rem;
+  padding: 0.35rem 0.55rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  border: none;
+  border-right: 1px solid #2a2a3a;
+  background: transparent;
+  color: #a8a8b8;
+  cursor: pointer;
+}
+
+.hype-panel__count-toggle .hype-panel__count-btn:last-child {
+  border-right: none;
+}
+
+.hype-panel__count-btn:hover:not(:disabled) {
+  color: #e0e0e8;
+  background: #1e1e2a;
+}
+
+.hype-panel__count-btn.is-active {
+  background: #2a2a3d;
+  color: #e8e8f0;
+}
+
+.hype-panel__count-btn:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+}
+
+.hype-panel--dialog .hype-panel__grid {
+  gap: 0.65rem;
+  flex-wrap: wrap;
+}
+
+@media (min-width: 900px) {
+  .hype-panel--dialog .hype-panel__grid {
+    flex-direction: row;
+  }
+
+  .hype-panel--dialog .hype-panel__grid .hype-panel__card {
+    flex: 1 1 calc(20% - 0.5rem);
+    min-width: 9rem;
+  }
+}
+
+.hype-panel--dialog .hype-panel__card {
+  padding: 0.55rem 0.6rem;
+  background: #16161f;
+  border: 1px solid #2a2a3a;
+  border-radius: 8px;
+}
+
+.hype-panel--dialog .hype-panel__card:hover {
+  background: #1e1e28;
+}
+
+.hype-panel--dialog .hype-panel__name {
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  line-height: 1.35;
+  overflow: visible;
+  text-overflow: unset;
+}
+
+.hype-panel--disabled {
+  opacity: 0.85;
+}
+
+.hype-panel__title {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: #8a8a9a;
+  margin: 0 0 0.35rem;
+}
+
+.hype-panel__intro,
+.hype-panel__hint {
+  font-size: 0.82rem;
+  color: #a8a8b8;
+  margin: 0 0 0.5rem;
+  line-height: 1.35;
+}
+
+.hype-panel__grid {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+@media (min-width: 900px) {
+  .hype-panel__grid {
+    flex-direction: row;
+    align-items: stretch;
+  }
+
+  .hype-panel__grid .hype-panel__card {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
+.hype-panel__card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.35rem 0.4rem;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #c8c8d8;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.hype-panel__card .tag-pills {
+  max-width: 100%;
+  justify-content: flex-start;
+}
+
+.hype-panel__card:hover {
+  background: #252532;
+}
+
+.hype-panel__rank {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #7a8a9a;
+}
+
+.hype-panel__name {
+  font-size: 0.88rem;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.media-rank-list {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  border: 1px solid #2a2a3a;
+  border-radius: 8px;
+  padding: 0.4rem 0.5rem 0.5rem;
+  background: #16161f;
+  box-sizing: border-box;
+}
+
+.media-rank-list--empty {
+  opacity: 0.85;
+  justify-content: center;
+}
+
+.media-rank-list__hint {
+  font-size: 0.78rem;
+  color: #a8a8b8;
+  margin: 0;
+  line-height: 1.35;
+}
+
+.media-rank-list__ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.media-rank-list__item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  text-align: left;
+  padding: 0.3rem 0.35rem;
+  border: none;
+  border-radius: 4px;
+  background: transparent;
+  color: #c8c8d8;
+  cursor: pointer;
+  box-sizing: border-box;
+}
+
+.media-rank-list__item:hover {
+  background: #252532;
+}
+
+.media-rank-list__rank {
+  flex-shrink: 0;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  color: #7a8a9a;
+  min-width: 2rem;
+}
+
+.media-rank-list__name {
+  font-size: 0.88rem;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.media-rank-list__item .tag-pills {
+  flex-shrink: 0;
+  margin-left: auto;
+  max-width: min(42%, 14rem);
+  justify-content: flex-end;
 }
 
 .week-grid {
