@@ -62,6 +62,21 @@ The UI is already authored in **pt-BR**. When adding or changing behavior:
 
 This keeps code review and tooling consistent while matching the intended audience for on-screen text.
 
+## Commit messages
+
+Follow **[Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)** (see the [spec source](https://github.com/conventional-commits/conventionalcommits.org/blob/master/content/v1.0.0/index.md)):
+
+- **Format:** `<type>[optional scope]: <description>` — optional body and footers after a blank line.
+- **Common types:** `feat`, `fix`, `docs`, `chore`, `style`, `refactor`, `perf`, `test`, `build`, `ci` (and others your tooling allows).
+- **Breaking changes:** indicate with `!` after the type/scope (e.g. `feat(api)!:`) and/or a `BREAKING CHANGE:` footer as described in the spec.
+- **Language:** commit subjects and bodies **must use English (en-US)** so history matches this guide and stays machine-friendly.
+
+Examples:
+
+- `feat(search): add fuzzy match for media names`
+- `fix(editor): prevent duplicate tag names`
+- `docs: update AGENTS.md for JSON Lines persistence`
+
 ## Commands
 
 - `npm run dev` — local dev server  
