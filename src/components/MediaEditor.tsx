@@ -21,6 +21,25 @@ function ensureTrailingTagRow(tags: Tag[]): Tag[] {
   return out
 }
 
+/** Índice da última tag com nome não vazio; -1 se não houver nenhuma. */
+function lastTagNameIndex(tags: Tag[]): number {
+  let last = -1
+  for (let i = 0; i < tags.length; i++) {
+    if (tags[i][0].trim() !== '') last = i
+  }
+  return last
+}
+
+function scrollFieldIntoView(el: HTMLElement | null) {
+  if (!el) return
+  el.scrollIntoView({ block: 'nearest', inline: 'nearest' })
+}
+
+/**
+ * Formulário de edição de uma mídia (nome, dias, tags) no diálogo modal.
+ * Foco inicial: nome vazio → nome; nome preenchido sem tags com nome → campo “nome” da nova tag;
+ * com pelo menos uma tag nomeada → valor da última tag nomeada.
+ */
 export function MediaEditor({
   media,
   knownTagNames,
@@ -40,9 +59,25 @@ export function MediaEditor({
 
   useEffect(() => {
     queueMicrotask(() => {
-      nameRef.current?.focus()
-      nameRef.current?.select()
+      const nameFilled = media.name.trim() !== ''
+      if (!nameFilled) {
+        nameRef.current?.focus()
+        nameRef.current?.select()
+        scrollFieldIntoView(nameRef.current)
+        return
+      }
+      const tagIdx = lastTagNameIndex(media.tags)
+      if (tagIdx < 0) {
+        const el = tagNameRefs.current[0]
+        el?.focus()
+        scrollFieldIntoView(el)
+        return
+      }
+      const el = tagValueRefs.current[tagIdx]
+      el?.focus()
+      scrollFieldIntoView(el)
     })
+    /* Intencionalmente só na montagem: evita roubar o foco ao editar campos. */
   }, [])
 
   const update = (next: Media) => {
