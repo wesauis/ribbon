@@ -1,3 +1,5 @@
+import type { Media } from '../types/media'
+
 /** RNG em [0, 1); injetável para testes. */
 export type Rng = () => number
 
