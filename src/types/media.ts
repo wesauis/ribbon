@@ -59,3 +59,24 @@ export function cloneMedia(m: Media): Media {
     tags: m.tags.map(([a, b]) => [a, b] as Tag),
   }
 }
+
+/** Texto curto para UI: nome da tag e valor se existir. */
+export function formatTagLabel(t: Tag): string {
+  const nt = t[0].trim()
+  const vt = t[1].trim()
+  if (!nt) return ''
+  if (vt) return `${nt}: ${vt}`
+  return nt
+}
+
+/** Primeiras tags com nome não vazio, no máximo `max` (ex.: 2 para pills). */
+export function firstDisplayTags(media: Media, max = 2): string[] {
+  const out: string[] = []
+  for (const row of media.tags) {
+    const label = formatTagLabel(row)
+    if (!label) continue
+    out.push(label)
+    if (out.length >= max) break
+  }
+  return out
+}

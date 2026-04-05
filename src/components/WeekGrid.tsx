@@ -1,5 +1,6 @@
 import type { Media } from '../types/media'
 import { WEEKDAYS_ORDER } from '../types/media'
+import { TagPills } from './TagPills'
 
 type Props = {
   medias: Media[]
@@ -22,7 +23,8 @@ export function WeekGrid({ medias, onEditMedia }: Props) {
                     className="week-grid__item"
                     onClick={() => onEditMedia(index)}
                   >
-                    {m.name}
+                    <span className="week-grid__name">{m.name}</span>
+                    <TagPills media={m} />
                   </button>
                 </li>
               )

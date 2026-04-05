@@ -1,6 +1,7 @@
 import { useCallback, useId, useMemo, useRef, useState } from 'react'
 import type { Media } from '../types/media'
 import { fuzzySearchMedias } from '../search/fuzzy'
+import { TagPills } from './TagPills'
 
 type Props = {
   medias: Media[]
@@ -103,7 +104,11 @@ export function MediaSearch({ medias, onOpenCreate, onOpenMedia }: Props) {
                 id={`${listId}-opt-${row}`}
                 role="option"
                 aria-selected={activeRow === row}
-                className={activeRow === row ? 'is-active' : ''}
+                className={
+                  activeRow === row
+                    ? 'media-search__option is-active'
+                    : 'media-search__option'
+                }
                 onMouseEnter={() => setActiveRow(row)}
                 onMouseDown={(e) => e.preventDefault()}
                 onClick={() => {
@@ -111,7 +116,14 @@ export function MediaSearch({ medias, onOpenCreate, onOpenMedia }: Props) {
                   setOpen(false)
                 }}
               >
-                {media?.name ?? '?'}
+                <span className="media-search__row">
+                  <span className="media-search__name">
+                    {media?.name ?? '?'}
+                  </span>
+                  {media && (
+                    <TagPills media={media} className="tag-pills--end" />
+                  )}
+                </span>
               </li>
             )
           })}
