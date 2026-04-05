@@ -95,7 +95,8 @@ export function MediaEditor({
     update({ ...media, weekdays: ws })
   }
 
-  const setTag = (i: number, col: 0 | 1, val: string) => {
+  /** Aplica alteração numa célula de tag; retorna false se o nome for duplicado (só coluna nome). */
+  const setTag = (i: number, col: 0 | 1, val: string): boolean => {
     const tags = media.tags.map((row, j) =>
       j === i ? (col === 0 ? ([val, row[1]] as Tag) : ([row[0], val] as Tag)) : row,
     )
@@ -105,10 +106,29 @@ export function MediaEditor({
         n &&
         tags.some((t, j) => j !== i && t[0].trim() === n)
       ) {
-        return
+        return false
       }
     }
     update({ ...media, tags })
+    return true
+  }
+
+  /**
+   * Nome da tag igual a uma opção conhecida (ex.: escolha na datalist) e valor vazio:
+   * passa o foco para o valor para continuar a edição sem clique extra.
+   */
+  const onTagNameChange = (i: number, e: React.ChangeEvent<HTMLInputElement>) => {
+    const val = e.target.value
+    const valueWasEmpty = media.tags[i][1].trim() === ''
+    const n = val.trim()
+    const isKnownName = n !== '' && sortedKnown.includes(n)
+    const applied = setTag(i, 0, val)
+    if (!applied || !valueWasEmpty || !isKnownName) return
+    queueMicrotask(() => {
+      const el = tagValueRefs.current[i]
+      el?.focus()
+      scrollFieldIntoView(el)
+    })
   }
 
   const onTagNameKeyDown = (
@@ -180,7 +200,7 @@ export function MediaEditor({
               list={datalistId}
               placeholder="nome"
               value={row[0]}
-              onChange={(e) => setTag(i, 0, e.target.value)}
+              onChange={(e) => onTagNameChange(i, e)}
               onFocus={() => {
                 /* datalist mostra opções ao focar no Chrome */
               }}
