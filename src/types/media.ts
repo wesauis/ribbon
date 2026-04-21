@@ -46,6 +46,8 @@ export type Media = {
   name: string
   weekdays: Set<Weekday>
   tags: Tag[]
+  /** URL strings; optional, preserved on JSONL read/write. */
+  urls?: string[]
 }
 
 export function emptyMedia(): Media {
@@ -57,6 +59,7 @@ export function cloneMedia(m: Media): Media {
     name: m.name,
     weekdays: new Set(m.weekdays),
     tags: m.tags.map(([a, b]) => [a, b] as Tag),
+    ...(m.urls !== undefined && { urls: [...m.urls] }),
   }
 }
 

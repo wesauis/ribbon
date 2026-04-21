@@ -13,6 +13,7 @@ type DiskMedia = {
   name?: unknown
   weekdays?: unknown
   tags?: unknown
+  urls?: unknown
 }
 
 function isOmitted(value: unknown): boolean {
@@ -43,6 +44,7 @@ export function mediaToDiskObject(m: Media): Record<string, unknown> {
     if (c) tagsCompact.push(c)
   }
   if (tagsCompact.length > 0) o.tags = tagsCompact
+  if (m.urls !== undefined && m.urls.length > 0) o.urls = [...m.urls]
   return o
 }
 
@@ -75,7 +77,15 @@ export function parseMediaLine(obj: unknown): Media | null {
     }
   }
   if (tags.length === 0) tags.push(['', ''])
-  return { name, weekdays, tags }
+  const out: Media = { name, weekdays, tags }
+  if (Array.isArray(d.urls)) {
+    const urls: string[] = []
+    for (const u of d.urls) {
+      if (typeof u === 'string') urls.push(u)
+    }
+    if (urls.length > 0) out.urls = urls
+  }
+  return out
 }
 
 /** Split file text into records; invalid lines are skipped. */
