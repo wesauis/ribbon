@@ -6,7 +6,7 @@ import { useLongPress } from '../hooks/useLongPress'
 type Props = {
   mediaIndex: number
   onEdit: (index: number) => void
-  onHypeRank: (index: number) => void
+  onHype: (index: number) => void
   children: React.ReactNode
 }
 
@@ -24,7 +24,7 @@ function dispatchContextMenu(el: HTMLElement, x: number, y: number): void {
 export function MediaRowContextMenu({
   mediaIndex,
   onEdit,
-  onHypeRank,
+  onHype,
   children,
 }: Props) {
   const triggerRef = useRef<HTMLElement | null>(null)
@@ -70,10 +70,10 @@ export function MediaRowContextMenu({
           </ContextMenu.Item>
           <ContextMenu.Item
             className="shadcn-cm__item"
-            onSelect={() => onHypeRank(mediaIndex)}
+            onSelect={() => onHype(mediaIndex)}
           >
             <Fire className="shadcn-cm__icon" size={16} />
-            <span>Hype rank</span>
+            <span>Hype</span>
           </ContextMenu.Item>
         </ContextMenu.Content>
       </ContextMenu.Portal>

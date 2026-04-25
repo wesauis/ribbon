@@ -5,14 +5,14 @@ import { MediaRowContextMenu } from './MediaRowContextMenu'
 type Props = {
   medias: Media[]
   onEditMedia: (index: number) => void
-  onHypeRank: (index: number) => void
+  onHype: (index: number) => void
 }
 
 /**
  * All media in file order with global rank (#1 … #n).
  * Click opens the editor (same as the week grid). No section title — the tab indicates the view.
  */
-export function MediaRankList({ medias, onEditMedia, onHypeRank }: Props) {
+export function MediaRankList({ medias, onEditMedia, onHype }: Props) {
   if (medias.length === 0) {
     return (
       <section
@@ -33,7 +33,7 @@ export function MediaRankList({ medias, onEditMedia, onHypeRank }: Props) {
               media={m}
               index={index}
               onEditMedia={onEditMedia}
-              onHypeRank={onHypeRank}
+              onHype={onHype}
             />
           </li>
         ))}
@@ -46,15 +46,15 @@ type RowProps = {
   media: Media
   index: number
   onEditMedia: (index: number) => void
-  onHypeRank: (index: number) => void
+  onHype: (index: number) => void
 }
 
-function RankRow({ media, index, onEditMedia, onHypeRank }: RowProps) {
+function RankRow({ media, index, onEditMedia, onHype }: RowProps) {
   return (
     <MediaRowContextMenu
       mediaIndex={index}
       onEdit={onEditMedia}
-      onHypeRank={onHypeRank}
+      onHype={onHype}
     >
       <button
         type="button"

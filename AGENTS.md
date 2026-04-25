@@ -62,6 +62,13 @@ The UI is already authored in **pt-BR**. When adding or changing behavior:
 
 This keeps code review and tooling consistent while matching the intended audience for on-screen text.
 
+## CSS and class naming
+
+Follow **[CUBE CSS](https://cube.fyi/)** for naming and organizing CSS:
+
+- Prefer clear, role-based component classes (e.g. `media-rank-list`, `media-rank-list__item`) and small, reusable utility patterns when needed.
+- Keep classes consistent with the existing codebase style; avoid inventing a second naming scheme.
+
 ## Commit messages
 
 Follow **[Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/)** (see the [spec source](https://github.com/conventional-commits/conventionalcommits.org/blob/master/content/v1.0.0/index.md)):

@@ -260,6 +260,24 @@
   flex-shrink: 0;
 }
 
+.hype-dialog__title-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.hype-dialog__subtitle {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #a8a8b8;
+  line-height: 1.25;
+  max-width: 34rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .hype-dialog__hint {
   font-size: 0.8rem;
   color: #a8a8b8;
@@ -572,6 +590,34 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.hype-rank__title {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.hype-rank__meta {
+  margin: 0;
+  font-size: 0.8rem;
+  color: #a8a8b8;
+}
+
+.hype-rank__grid {
+  flex-direction: column !important;
+  flex-wrap: nowrap !important;
+}
+
+.hype-rank__grid .hype-panel__card {
+  flex: 0 0 auto !important;
+  min-width: 0 !important;
+}
+
+.hype-rank__card--emphasis {
+  border: 1px solid #3a3a52;
+  border-radius: 8px;
+  background: #16161f;
 }
 
 .media-rank-list {
