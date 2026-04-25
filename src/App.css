@@ -833,3 +833,47 @@
 .media-editor__delete:hover {
   background: #3a1e22 !important;
 }
+
+.media-row-context {
+  display: block;
+}
+
+.shadcn-cm__content {
+  /* Mirrors shadcn/ui sizing: min-w-[8rem] p-1 rounded-md shadow-md border */
+  z-index: 60;
+  min-width: 8rem;
+  overflow: hidden;
+  border-radius: 0.375rem;
+  border: 1px solid #3a3a52;
+  background: #1e1e2a;
+  padding: 0.25rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35);
+  color: inherit;
+  font-size: 0.875rem;
+}
+
+.shadcn-cm__item {
+  /* Mirrors shadcn/ui item: rounded-sm px-2 py-1.5 text-sm */
+  position: relative;
+  display: flex;
+  width: 100%;
+  cursor: default;
+  user-select: none;
+  align-items: center;
+  border-radius: 0.125rem;
+  padding: 0.375rem 0.5rem;
+  outline: none;
+  font-weight: 600;
+}
+
+.shadcn-cm__item[data-highlighted] {
+  background: #2a2a3d;
+}
+
+.shadcn-cm__icon {
+  flex-shrink: 0;
+  width: 1rem;
+  height: 1rem;
+  margin-right: 0.5rem;
+  color: #c8c8d8;
+}

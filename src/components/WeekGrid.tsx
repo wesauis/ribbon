@@ -1,13 +1,15 @@
 import type { Media } from '../types/media'
 import { WEEKDAYS_ORDER } from '../types/media'
 import { TagPills } from './TagPills'
+import { MediaRowContextMenu } from './MediaRowContextMenu'
 
 type Props = {
   medias: Media[]
   onEditMedia: (index: number) => void
+  onHypeRank: (index: number) => void
 }
 
-export function WeekGrid({ medias, onEditMedia }: Props) {
+export function WeekGrid({ medias, onEditMedia, onHypeRank }: Props) {
   return (
     <div className="week-grid">
       {WEEKDAYS_ORDER.map((day) => (
@@ -18,14 +20,12 @@ export function WeekGrid({ medias, onEditMedia }: Props) {
               if (!m.weekdays.has(day)) return null
               return (
                 <li key={`${index}-${day}`}>
-                  <button
-                    type="button"
-                    className="week-grid__item"
-                    onClick={() => onEditMedia(index)}
-                  >
-                    <span className="week-grid__name">{m.name}</span>
-                    <TagPills media={m} />
-                  </button>
+                  <WeekRow
+                    media={m}
+                    index={index}
+                    onEditMedia={onEditMedia}
+                    onHypeRank={onHypeRank}
+                  />
                 </li>
               )
             })}
@@ -33,5 +33,43 @@ export function WeekGrid({ medias, onEditMedia }: Props) {
         </section>
       ))}
     </div>
+  )
+}
+
+type RowProps = {
+  media: Media
+  index: number
+  onEditMedia: (index: number) => void
+  onHypeRank: (index: number) => void
+}
+
+function WeekRow({ media, index, onEditMedia, onHypeRank }: RowProps) {
+  return (
+    <MediaRowContextMenu
+      mediaIndex={index}
+      onEdit={onEditMedia}
+      onHypeRank={onHypeRank}
+    >
+      <button
+        type="button"
+        className="week-grid__item"
+        onClick={() => {
+          // Desktop: edit only on double click.
+          if (window.matchMedia('(pointer: fine)').matches) return
+          onEditMedia(index)
+        }}
+        onDoubleClick={() => onEditMedia(index)}
+        onKeyDown={(e) => {
+          // Keep keyboard accessible on desktop.
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            onEditMedia(index)
+          }
+        }}
+      >
+        <span className="week-grid__name">{media.name}</span>
+        <TagPills media={media} />
+      </button>
+    </MediaRowContextMenu>
   )
 }

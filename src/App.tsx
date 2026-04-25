@@ -4,6 +4,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
+import { Fire } from '@phosphor-icons/react'
 import { HypePanel } from './components/HypePanel'
 import { MediaEditor } from './components/MediaEditor'
 import { MediaRankList } from './components/MediaRankList'
@@ -64,6 +65,7 @@ export default function App() {
   const [hypeCandidateCount, setHypeCandidateCount] = useState<HypeCount>(2)
   /** Bumped when the hype count control changes — forces a new candidate batch. */
   const [hypeCandidateNonce, setHypeCandidateNonce] = useState(0)
+  const [hypeSeedIndex, setHypeSeedIndex] = useState<number | null>(null)
 
   const persist = useCallback(
     async (next: Media[]) => {
@@ -157,7 +159,14 @@ export default function App() {
 
   const onOpenMedia = (index: number) => {
     hypeDialogRef.current?.close()
+    setHypeSeedIndex(null)
     setEditingIndex(index)
+  }
+
+  const onHypeRank = (index: number) => {
+    setAppView('ranking')
+    setHypeSeedIndex(index)
+    hypeDialogRef.current?.showModal()
   }
 
   const onEditorChange = (next: Media) => {
@@ -253,9 +262,12 @@ export default function App() {
                 : 'Hype'
             }
             disabled={medias.length < 2}
-            onClick={() => hypeDialogRef.current?.showModal()}
+            onClick={() => {
+              setHypeSeedIndex(null)
+              hypeDialogRef.current?.showModal()
+            }}
           >
-            👑
+            <Fire size={18} weight="fill" />
           </button>
           <MediaSearch
             medias={medias}
@@ -272,10 +284,18 @@ export default function App() {
         className="app__main"
       >
         {appView === 'week' ? (
-          <WeekGrid medias={medias} onEditMedia={onOpenMedia} />
+          <WeekGrid
+            medias={medias}
+            onEditMedia={onOpenMedia}
+            onHypeRank={onHypeRank}
+          />
         ) : (
           <div className="app__ranking-view">
-            <MediaRankList medias={medias} onEditMedia={onOpenMedia} />
+            <MediaRankList
+              medias={medias}
+              onEditMedia={onOpenMedia}
+              onHypeRank={onHypeRank}
+            />
           </div>
         )}
       </main>
@@ -331,6 +351,7 @@ export default function App() {
               variant="dialog"
               candidateCount={hypeCandidateCount}
               candidateNonce={hypeCandidateNonce}
+              seedIndex={hypeSeedIndex}
             />
           </div>
         </div>

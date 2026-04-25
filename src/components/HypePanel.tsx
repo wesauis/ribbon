@@ -21,6 +21,11 @@ type Props = {
   candidateCount?: HypeCount
   /** Incremented in `App` when the count group changes — new random batch. */
   candidateNonce?: number
+  /**
+   * When set, the candidate batch will always include this index (when possible),
+   * so you can "hype rank" a specific media against random others.
+   */
+  seedIndex?: number | null
 }
 
 const defaultRng: Rng = () => Math.random()
@@ -32,6 +37,7 @@ export function HypePanel({
   variant = 'default',
   candidateCount: candidateCountProp,
   candidateNonce = 0,
+  seedIndex = null,
 }: Props) {
   const isDialog = variant === 'dialog'
   const len = medias.length
@@ -41,7 +47,7 @@ export function HypePanel({
   const [candidates, setCandidates] = useState<number[] | null>(() => {
     if (len < 2) return null
     const n = effectiveHypeCount(candidateCountProp ?? 2, len)
-    return nextHypeCandidates(len, n, null, defaultRng)
+    return nextSeededCandidates(len, n, seedIndex, defaultRng)
   })
 
   /** Recompute candidate indices when media length or hype controls change. */
@@ -52,8 +58,8 @@ export function HypePanel({
       return
     }
     const n = effectiveHypeCount(candidateCount, len)
-    setCandidates(nextHypeCandidates(len, n, null, defaultRng))
-  }, [len, candidateCount, candidateNonce])
+    setCandidates(nextSeededCandidates(len, n, seedIndex, defaultRng))
+  }, [len, candidateCount, candidateNonce, seedIndex])
 
   if (len < 2) {
     return (
@@ -96,13 +102,14 @@ export function HypePanel({
     ]
 
     setCandidates(
-      nextHypeCandidates(
+      nextSeededCandidates(
         lengthAfter,
         n,
+        seedIndex,
+        defaultRng,
         previousRoundIndicesAfterReorder.length > 0
           ? previousRoundIndicesAfterReorder
           : null,
-        defaultRng,
       ),
     )
   }
@@ -131,6 +138,31 @@ export function HypePanel({
       </div>
     </section>
   )
+}
+
+function nextSeededCandidates(
+  mediaLength: number,
+  count: number,
+  seedIndex: number | null,
+  rng: Rng,
+  previousRoundIndices: readonly number[] | null = null,
+): number[] {
+  if (seedIndex === null) {
+    return nextHypeCandidates(mediaLength, count, previousRoundIndices, rng)
+  }
+  if (seedIndex < 0 || seedIndex >= mediaLength) {
+    return nextHypeCandidates(mediaLength, count, previousRoundIndices, rng)
+  }
+  if (count <= 1) return [seedIndex]
+
+  // If we can avoid reusing the previous round, still try to keep `seedIndex` in.
+  const base = nextHypeCandidates(mediaLength, count, previousRoundIndices, rng)
+  if (base.includes(seedIndex)) return base
+
+  // Replace one entry with the seed. Keep uniqueness.
+  const next = [...base]
+  next[0] = seedIndex
+  return [...new Set(next)].slice(0, count)
 }
 
 type CardProps = {
