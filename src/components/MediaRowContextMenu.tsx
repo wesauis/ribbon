@@ -60,7 +60,7 @@ export function MediaRowContextMenu({
       </ContextMenu.Trigger>
 
       <ContextMenu.Portal>
-        <ContextMenu.Content className="shadcn-cm__content" sideOffset={6}>
+        <ContextMenu.Content className="shadcn-cm__content">
           <ContextMenu.Item
             className="shadcn-cm__item"
             onSelect={() => onEdit(mediaIndex)}

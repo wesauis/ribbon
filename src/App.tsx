@@ -4,7 +4,7 @@
  */
 import { useCallback, useEffect, useRef, useState } from 'react'
 import './App.css'
-import { Fire, ListNumbers } from '@phosphor-icons/react'
+import { ListNumbers } from '@phosphor-icons/react'
 import { RankingPanel } from './components/RankingPanel'
 import { HypeRankDialog } from './components/HypeRankDialog'
 import { MediaEditor } from './components/MediaEditor'
