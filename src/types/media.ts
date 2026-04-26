@@ -72,6 +72,50 @@ export function formatTagLabel(t: Tag): string {
   return nt
 }
 
+/** Tag name set but value empty (must fix or clear name before closing the editor). */
+export function hasIncompleteTag(tags: Tag[]): boolean {
+  for (const [n, v] of tags) {
+    if (n.trim() !== '' && v.trim() === '') return true
+  }
+  return false
+}
+
+/** Only rows with both non-empty name and value (used when persisting and on editor close). */
+export function tagsWithBothNameAndValue(tags: Tag[]): Tag[] {
+  return tags.filter(([n, v]) => n.trim() !== '' && v.trim() !== '')
+}
+
+function isRowWhollyEmpty(t: Tag): boolean {
+  return t[0].trim() === '' && t[1].trim() === ''
+}
+
+/**
+ * One trailing `['', '']` when the last row has a name so the user can add another tag;
+ * if there are no tags at all, one empty row. Used while editing, not a persistence shape.
+ */
+export function ensureTrailingTagRow(tags: Tag[]): Tag[] {
+  if (tags.length === 0) tags.push(['', ''])
+  return tags
+}
+
+/**
+ * Call when opening the editor (new or existing item). Injects a placeholder tag row if none, removes
+ * invalid all-empty rows when there is more than one row (keeps a single `['', '']` as the only row),
+ * then appends a draft row if the last named tag has no slot after it. Does not write to disk.
+ */
+export function openMediaForEdit(m: Media): Media {
+  const base = cloneMedia(m)
+  let tags: Tag[] = base.tags.map((t) => [...t] as Tag)
+  if (tags.length > 1) {
+    tags = tags.filter((t) => !isRowWhollyEmpty(t))
+  }
+  if (tags.length === 0) {
+    tags = [['', '']]
+  }
+  tags = ensureTrailingTagRow(tags)
+  return { ...base, tags }
+}
+
 /** First tags with non-empty name, at most `max` (e.g. 2 for pills). */
 export function firstDisplayTags(media: Media, max = 2): string[] {
   const out: string[] = []

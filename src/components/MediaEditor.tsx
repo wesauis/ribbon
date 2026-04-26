@@ -1,4 +1,4 @@
-import { Check } from '@phosphor-icons/react'
+import { Check, Plus } from '@phosphor-icons/react'
 import {
   useEffect,
   useId,
@@ -8,9 +8,15 @@ import {
   useState,
   type ChangeEvent,
   type KeyboardEvent,
+  type RefObject,
 } from 'react'
 import type { Media, Tag, Weekday } from '../types/media'
-import { WEEKDAYS_ORDER } from '../types/media'
+import {
+  WEEKDAYS_ORDER,
+  ensureTrailingTagRow,
+  hasIncompleteTag,
+  tagsWithBothNameAndValue,
+} from '../types/media'
 
 type Props = {
   media: Media
@@ -19,19 +25,11 @@ type Props = {
   onClose: () => void
   /** Delete this media from the store and close the dialog (after confirmation). */
   onDelete: () => void
+  /** Host `<dialog>` ref so we can block Escape close while a tag has name but no value. */
+  dialogRef: RefObject<HTMLDialogElement | null>
 }
 
 type TagRowPhase = 'name' | 'value'
-
-function ensureTrailingTagRow(tags: Tag[]): Tag[] {
-  const out = tags.map((t) => [...t] as Tag)
-  const last = out[out.length - 1]
-  if (last && last[0].trim() !== '') {
-    out.push(['', ''])
-  }
-  if (out.length === 0) out.push(['', ''])
-  return out
-}
 
 /** Index of the last tag with a non-empty name, or -1 if none. */
 function lastTagNameIndex(tags: Tag[]): number {
@@ -56,9 +54,24 @@ function rowPhase(phases: TagRowPhase[], i: number, row: Tag): TagRowPhase {
   return phases[i] ?? 'value'
 }
 
+function normalizeTagsForStore(tags: Tag[]): Tag[] {
+  return tagsWithBothNameAndValue(tags)
+}
+
+function firstIncompleteTagIndex(tags: Tag[]): number {
+  for (let i = 0; i < tags.length; i++) {
+    const [n, v] = tags[i]
+    if (n.trim() !== '' && v.trim() === '') return i
+  }
+  return -1
+}
+
 /**
  * Edit media (name, weekdays, tags) in a modal dialog.
- * Initial focus: empty name → name field; at least one named tag → last tag value; otherwise no tag autofocus.
+ * Open autofocus (once per mount): title only when it is empty; with a title, never focus the title (skip it
+ * for dialog default focus via tabIndex, then focus first tag name or last tag value). Close is blocked while
+ * any tag has a name but no value. Only tags with both name and value are kept on close and on disk. `media`
+ * updates do not re-run open autofocus (mobile keyboard).
  */
 export function MediaEditor({
   media,
@@ -66,6 +79,7 @@ export function MediaEditor({
   onChange,
   onClose,
   onDelete,
+  dialogRef,
 }: Props) {
   const datalistId = useId()
   const nameRef = useRef<HTMLInputElement>(null)
@@ -74,6 +88,10 @@ export function MediaEditor({
   /** Phase switch schedules focus; refs are null until the next commit (value vs name are different nodes). */
   const pendingFocusTagNameIndex = useRef<number | null>(null)
   const pendingFocusTagValueIndex = useRef<number | null>(null)
+  /** Ensures open-dialog autofocus runs at most once per mount (avoids mobile keyboard refocus loops). */
+  const initialOpenFocusDoneRef = useRef(false)
+  const mediaRef = useRef(media)
+  mediaRef.current = media
 
   const [tagPhases, setTagPhases] = useState<TagRowPhase[]>(() => initialTagPhases(media.tags))
 
@@ -87,11 +105,37 @@ export function MediaEditor({
       const n = media.tags.length
       if (n === prev.length) return prev
       if (n > prev.length) {
-        return [...prev, ...Array.from({ length: n - prev.length }, () => 'name' satisfies TagRowPhase)]
+        return [
+          ...prev,
+          ...Array.from({ length: n - prev.length }, (): TagRowPhase => 'name'),
+        ]
       }
       return prev.slice(0, n)
     })
   }, [media.tags.length])
+
+  useEffect(() => {
+    const d = dialogRef.current
+    if (!d) return
+    const onDialogCancel = (e: Event) => {
+      const tags = mediaRef.current.tags
+      if (!hasIncompleteTag(tags)) return
+      e.preventDefault()
+      window.alert(
+        'Complete o valor da tag ou apague o nome da tag antes de fechar.',
+      )
+      const idx = firstIncompleteTagIndex(tags)
+      if (idx < 0) return
+      pendingFocusTagValueIndex.current = idx
+      setTagPhases((p) => {
+        const next = [...p]
+        next[idx] = 'value'
+        return next
+      })
+    }
+    d.addEventListener('cancel', onDialogCancel)
+    return () => d.removeEventListener('cancel', onDialogCancel)
+  }, [dialogRef, setTagPhases])
 
   useLayoutEffect(() => {
     const vIdx = pendingFocusTagValueIndex.current
@@ -116,25 +160,40 @@ export function MediaEditor({
     }
   }, [tagPhases])
 
-  useEffect(() => {
-    queueMicrotask(() => {
-      const nameFilled = media.name.trim() !== ''
-      if (!nameFilled) {
-        nameRef.current?.focus()
-        nameRef.current?.select()
-        scrollFieldIntoView(nameRef.current)
+  /** Snapshot when the dialog opens; do not re-run when `media` updates from typing. */
+  useLayoutEffect(() => {
+    if (initialOpenFocusDoneRef.current) return
+    initialOpenFocusDoneRef.current = true
+
+    const mediaNameEmpty = media.name.trim() === ''
+
+    if (mediaNameEmpty) {
+      nameRef.current?.focus()
+      nameRef.current?.select()
+      scrollFieldIntoView(nameRef.current)
+      return
+    }
+
+    const focusTagFieldForOpen = () => {
+      nameRef.current?.blur()
+      const lastNamedIdx = lastTagNameIndex(media.tags)
+      if (lastNamedIdx < 0) {
+        const tagNameEl = tagNameRefs.current[0]
+        tagNameEl?.focus()
+        scrollFieldIntoView(tagNameEl)
         return
       }
-      const tagIdx = lastTagNameIndex(media.tags)
-      if (tagIdx < 0) {
-        return
-      }
-      const el = tagValueRefs.current[tagIdx]
-      el?.focus()
-      scrollFieldIntoView(el)
+      const valueEl = tagValueRefs.current[lastNamedIdx]
+      valueEl?.focus()
+      scrollFieldIntoView(valueEl)
+    }
+
+    focusTagFieldForOpen()
+    /* Dialog showModal() may focus the first tabbable control after our layout pass; run again after paint. */
+    requestAnimationFrame(() => {
+      requestAnimationFrame(focusTagFieldForOpen)
     })
-    /* Mount only: avoid stealing focus while editing fields. */
-    // eslint-disable-next-line react-hooks/exhaustive-deps -- initial focus only on mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- open snapshot only; omit `media` so edits never refocus
   }, [])
 
   const update = (next: Media) => {
@@ -216,6 +275,36 @@ export function MediaEditor({
     }
   }
 
+  const focusFirstIncompleteValue = () => {
+    const idx = firstIncompleteTagIndex(mediaRef.current.tags)
+    if (idx < 0) return
+    pendingFocusTagValueIndex.current = idx
+    setTagPhases((p) => {
+      const next = [...p]
+      next[idx] = 'value'
+      return next
+    })
+  }
+
+  const tryClose = () => {
+    if (hasIncompleteTag(media.tags)) {
+      window.alert(
+        'Complete o valor da tag ou apague o nome da tag antes de fechar.',
+      )
+      focusFirstIncompleteValue()
+      return
+    }
+    onChange({ ...media, tags: normalizeTagsForStore(media.tags) })
+    onClose()
+  }
+
+  const addEmptyTagRow = () => {
+    const i = media.tags.length
+    pendingFocusTagNameIndex.current = i
+    setTagPhases((p) => [...p, 'name'])
+    update({ ...media, tags: [...media.tags, ['', '']] })
+  }
+
   return (
     <div className="media-editor">
       <datalist id={datalistId}>
@@ -230,6 +319,7 @@ export function MediaEditor({
           ref={nameRef}
           type="text"
           value={media.name}
+          tabIndex={media.name.trim() === '' ? 0 : -1}
           onChange={(e) => setName(e.target.value)}
         />
       </label>
@@ -251,7 +341,17 @@ export function MediaEditor({
       </fieldset>
 
       <div className="media-editor__tags">
-        <span className="media-editor__tags-label">Tags</span>
+        <div className="media-editor__tags-head">
+          <span className="media-editor__tags-label">Tags</span>
+          <button
+            type="button"
+            className="media-editor__tags-add"
+            onClick={addEmptyTagRow}
+          >
+            <Plus size={16} weight="bold" aria-hidden />
+            Adicionar
+          </button>
+        </div>
         {media.tags.map((row, i) => {
           const phase = rowPhase(tagPhases, i, row)
           return (
@@ -321,7 +421,7 @@ export function MediaEditor({
         >
           Apagar
         </button>
-        <button type="button" onClick={onClose}>
+        <button type="button" onClick={tryClose}>
           Fechar
         </button>
       </div>

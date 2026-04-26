@@ -825,8 +825,33 @@
   gap: 0.35rem;
 }
 
+.media-editor__tags-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
 .media-editor__tags-label {
   font-size: 0.85rem;
+}
+
+.media-editor__tags-add {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0.5rem;
+  border-radius: 8px;
+  border: 1px solid #3a3a52;
+  background: transparent;
+  color: #c4c4d4;
+  font-size: 0.8rem;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.media-editor__tags-add:hover {
+  background: #1b1b26;
 }
 
 /* One row per tag: shadcn-style InputGroup (addon + field in one border). */

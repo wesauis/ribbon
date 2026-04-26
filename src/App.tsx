@@ -17,7 +17,7 @@ import {
 } from './db/jsonl'
 import type { FilePickerAcceptType } from './types/file-system-access'
 import type { Media } from './types/media'
-import { emptyMedia } from './types/media'
+import { cloneMedia, emptyMedia, openMediaForEdit } from './types/media'
 import {
   effectiveRankingCount,
   RANKING_COUNTS,
@@ -151,7 +151,7 @@ export default function App() {
   const onOpenCreate = (nameFromQuery: string) => {
     if (fileHandle === null) return
     rankingDialogRef.current?.close()
-    const nm = newMediaFromQuery(nameFromQuery)
+    const nm = openMediaForEdit(newMediaFromQuery(nameFromQuery))
     setMedias((prev) => {
       const next = [...prev, nm]
       void persist(next)
@@ -163,6 +163,11 @@ export default function App() {
   const onOpenMedia = (index: number) => {
     rankingDialogRef.current?.close()
     hypeDialogRef.current?.close()
+    setMedias((prev) => {
+      const n = [...prev]
+      n[index] = openMediaForEdit(cloneMedia(n[index]))
+      return n
+    })
     setEditingIndex(index)
   }
 
@@ -405,6 +410,7 @@ export default function App() {
         {editingMedia && editingIndex !== null && (
           <MediaEditor
             key={editingIndex}
+            dialogRef={dialogRef}
             media={editingMedia}
             knownTagNames={knownTags}
             onChange={onEditorChange}

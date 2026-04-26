@@ -25,9 +25,8 @@ function isOmitted(value: unknown): boolean {
 
 function compactTag(t: Tag): DiskTag | null {
   const n = t[0].trim()
-  if (!n) return null
   const v = t[1].trim()
-  if (!v) return [n]
+  if (!n || !v) return null
   return [n, v]
 }
 
