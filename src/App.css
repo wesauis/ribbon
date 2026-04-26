@@ -829,29 +829,88 @@
   font-size: 0.85rem;
 }
 
+/* One row per tag: shadcn-style InputGroup (addon + field in one border). */
 .media-editor__tag-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.35rem;
   min-width: 0;
 }
 
-@media (max-width: 639px) {
-  .media-editor__tag-row {
-    grid-template-columns: 1fr;
-  }
-}
-
-.media-editor__tag-row input {
-  padding: 0.35rem 0.45rem;
+.media-editor__tag-group {
+  display: flex;
+  align-items: stretch;
+  min-width: 0;
   border-radius: 6px;
   border: 1px solid #3a3a52;
   background: #12121a;
+  box-sizing: border-box;
+}
+
+.media-editor__tag-name-input,
+.media-editor__tag-value-input {
+  flex: 1 1 0;
+  min-width: 0;
+  padding: 0.35rem 0.45rem;
+  border: none;
+  border-radius: 0;
+  background: transparent;
   color: inherit;
   font-size: 0.85rem;
-  min-width: 0;
-  width: 100%;
   box-sizing: border-box;
+  outline: none;
+}
+
+.media-editor__tag-name-input {
+  border-radius: 5px 0 0 5px;
+}
+
+.media-editor__tag-value-input {
+  text-align: right;
+  border-radius: 0 5px 5px 0;
+}
+
+.media-editor__tag-addon {
+  flex: 0 1 auto;
+  max-width: 42%;
+  margin: 0;
+  padding: 0 0 0 0.5rem;
+  align-self: center;
+  border: none;
+  background: transparent;
+  font: inherit;
+  font-size: 0.85rem;
+  line-height: 1.25;
+  color: #9494a8;
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.media-editor__tag-addon:hover {
+  color: #c4c4d4;
+}
+
+.media-editor__tag-commit {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0 0.35rem 0 0.15rem;
+  border: none;
+  border-radius: 0 5px 5px 0;
+  background: transparent;
+  color: #9494a8;
+  cursor: pointer;
+}
+
+.media-editor__tag-commit:hover {
+  color: #c8c8d8;
+}
+
+.media-editor__tag-commit:focus-visible {
+  outline: 2px solid #5a6a9a;
+  outline-offset: -2px;
 }
 
 .media-editor__actions {

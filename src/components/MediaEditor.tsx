@@ -1,4 +1,14 @@
-import { useEffect, useId, useMemo, useRef } from 'react'
+import { Check } from '@phosphor-icons/react'
+import {
+  useEffect,
+  useId,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ChangeEvent,
+  type KeyboardEvent,
+} from 'react'
 import type { Media, Tag, Weekday } from '../types/media'
 import { WEEKDAYS_ORDER } from '../types/media'
 
@@ -10,6 +20,8 @@ type Props = {
   /** Delete this media from the store and close the dialog (after confirmation). */
   onDelete: () => void
 }
+
+type TagRowPhase = 'name' | 'value'
 
 function ensureTrailingTagRow(tags: Tag[]): Tag[] {
   const out = tags.map((t) => [...t] as Tag)
@@ -35,10 +47,18 @@ function scrollFieldIntoView(el: HTMLElement | null) {
   el.scrollIntoView({ block: 'nearest', inline: 'nearest' })
 }
 
+function initialTagPhases(tags: Tag[]): TagRowPhase[] {
+  return tags.map((t) => (t[0].trim() === '' ? 'name' : 'value'))
+}
+
+function rowPhase(phases: TagRowPhase[], i: number, row: Tag): TagRowPhase {
+  if (row[0].trim() === '') return 'name'
+  return phases[i] ?? 'value'
+}
+
 /**
  * Edit media (name, weekdays, tags) in a modal dialog.
- * Initial focus: empty name → name field; name set but no named tags → new tag name;
- * otherwise → value of the last named tag.
+ * Initial focus: empty name → name field; at least one named tag → last tag value; otherwise no tag autofocus.
  */
 export function MediaEditor({
   media,
@@ -51,11 +71,50 @@ export function MediaEditor({
   const nameRef = useRef<HTMLInputElement>(null)
   const tagNameRefs = useRef<(HTMLInputElement | null)[]>([])
   const tagValueRefs = useRef<(HTMLInputElement | null)[]>([])
+  /** Phase switch schedules focus; refs are null until the next commit (value vs name are different nodes). */
+  const pendingFocusTagNameIndex = useRef<number | null>(null)
+  const pendingFocusTagValueIndex = useRef<number | null>(null)
+
+  const [tagPhases, setTagPhases] = useState<TagRowPhase[]>(() => initialTagPhases(media.tags))
 
   const sortedKnown = useMemo(
     () => [...new Set(knownTagNames)].sort((a, b) => a.localeCompare(b, 'pt-BR')),
     [knownTagNames],
   )
+
+  useEffect(() => {
+    setTagPhases((prev) => {
+      const n = media.tags.length
+      if (n === prev.length) return prev
+      if (n > prev.length) {
+        return [...prev, ...Array.from({ length: n - prev.length }, () => 'name' satisfies TagRowPhase)]
+      }
+      return prev.slice(0, n)
+    })
+  }, [media.tags.length])
+
+  useLayoutEffect(() => {
+    const vIdx = pendingFocusTagValueIndex.current
+    if (vIdx !== null) {
+      pendingFocusTagValueIndex.current = null
+      const vel = tagValueRefs.current[vIdx]
+      if (vel) {
+        vel.focus()
+        scrollFieldIntoView(vel)
+      }
+    }
+    const nIdx = pendingFocusTagNameIndex.current
+    if (nIdx !== null) {
+      pendingFocusTagNameIndex.current = null
+      const nel = tagNameRefs.current[nIdx]
+      if (nel) {
+        nel.focus()
+        const len = nel.value.length
+        nel.setSelectionRange(len, len)
+        scrollFieldIntoView(nel)
+      }
+    }
+  }, [tagPhases])
 
   useEffect(() => {
     queueMicrotask(() => {
@@ -68,9 +127,6 @@ export function MediaEditor({
       }
       const tagIdx = lastTagNameIndex(media.tags)
       if (tagIdx < 0) {
-        const el = tagNameRefs.current[0]
-        el?.focus()
-        scrollFieldIntoView(el)
         return
       }
       const el = tagValueRefs.current[tagIdx]
@@ -103,10 +159,7 @@ export function MediaEditor({
     )
     if (col === 0) {
       const n = val.trim()
-      if (
-        n &&
-        tags.some((t, j) => j !== i && t[0].trim() === n)
-      ) {
+      if (n && tags.some((t, j) => j !== i && t[0].trim() === n)) {
         return false
       }
     }
@@ -114,38 +167,46 @@ export function MediaEditor({
     return true
   }
 
-  /**
-   * When the tag name matches a known option (e.g. datalist pick) and the value is empty,
-   * move focus to the value field so editing can continue without an extra click.
-   */
-  const onTagNameChange = (i: number, e: React.ChangeEvent<HTMLInputElement>) => {
-    const val = e.target.value
-    const valueWasEmpty = media.tags[i][1].trim() === ''
-    const n = val.trim()
-    const isKnownName = n !== '' && sortedKnown.includes(n)
-    const applied = setTag(i, 0, val)
-    if (!applied || !valueWasEmpty || !isKnownName) return
-    queueMicrotask(() => {
-      const el = tagValueRefs.current[i]
-      el?.focus()
-      scrollFieldIntoView(el)
+  const commitToValuePhase = (i: number) => {
+    const n = media.tags[i][0].trim()
+    if (!n) return
+    pendingFocusTagValueIndex.current = i
+    setTagPhases((p) => {
+      const next = [...p]
+      next[i] = 'value'
+      return next
     })
   }
 
-  const onTagNameKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>,
-    i: number,
-  ) => {
+  const openNamePhase = (i: number) => {
+    pendingFocusTagNameIndex.current = i
+    setTagPhases((p) => {
+      const next = [...p]
+      next[i] = 'name'
+      return next
+    })
+  }
+
+  const onTagNameChange = (i: number, e: ChangeEvent<HTMLInputElement>) => {
+    setTag(i, 0, e.target.value)
+  }
+
+  const onTagNameKeyDown = (e: KeyboardEvent<HTMLInputElement>, i: number) => {
+    const n = media.tags[i][0].trim()
     if (e.key === 'Enter') {
+      if (!n) return
       e.preventDefault()
-      tagValueRefs.current[i]?.focus()
+      commitToValuePhase(i)
+      return
+    }
+    if (e.key === 'Tab' && !e.shiftKey) {
+      if (!n) return
+      e.preventDefault()
+      commitToValuePhase(i)
     }
   }
 
-  const onTagValueKeyDown = (
-    e: React.KeyboardEvent<HTMLInputElement>,
-    i: number,
-  ) => {
+  const onTagValueKeyDown = (e: KeyboardEvent<HTMLInputElement>, i: number) => {
     if (e.key === 'Enter') {
       e.preventDefault()
       const next = i + 1
@@ -191,34 +252,61 @@ export function MediaEditor({
 
       <div className="media-editor__tags">
         <span className="media-editor__tags-label">Tags</span>
-        {media.tags.map((row, i) => (
-          <div key={i} className="media-editor__tag-row">
-            <input
-              ref={(el) => {
-                tagNameRefs.current[i] = el
-              }}
-              type="text"
-              list={datalistId}
-              placeholder="nome"
-              value={row[0]}
-              onChange={(e) => onTagNameChange(i, e)}
-              onFocus={() => {
-                /* Chrome shows datalist options on focus */
-              }}
-              onKeyDown={(e) => onTagNameKeyDown(e, i)}
-            />
-            <input
-              ref={(el) => {
-                tagValueRefs.current[i] = el
-              }}
-              type="text"
-              placeholder="valor"
-              value={row[1]}
-              onChange={(e) => setTag(i, 1, e.target.value)}
-              onKeyDown={(e) => onTagValueKeyDown(e, i)}
-            />
-          </div>
-        ))}
+        {media.tags.map((row, i) => {
+          const phase = rowPhase(tagPhases, i, row)
+          return (
+            <div key={i} className="media-editor__tag-row">
+              {phase === 'name' ? (
+                <div className="media-editor__tag-group">
+                  <input
+                    ref={(el) => {
+                      tagNameRefs.current[i] = el
+                    }}
+                    className="media-editor__tag-name-input"
+                    type="text"
+                    list={datalistId}
+                    placeholder="nome"
+                    value={row[0]}
+                    onChange={(e) => onTagNameChange(i, e)}
+                    onKeyDown={(e) => onTagNameKeyDown(e, i)}
+                  />
+                  {row[0].trim() !== '' && (
+                    <button
+                      type="button"
+                      className="media-editor__tag-commit"
+                      aria-label="Confirmar nome e editar valor"
+                      onClick={() => commitToValuePhase(i)}
+                    >
+                      <Check size={16} weight="bold" aria-hidden />
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="media-editor__tag-group">
+                  <button
+                    type="button"
+                    className="media-editor__tag-addon"
+                    title={row[0]}
+                    onClick={() => openNamePhase(i)}
+                  >
+                    {row[0]}
+                  </button>
+                  <input
+                    ref={(el) => {
+                      tagValueRefs.current[i] = el
+                    }}
+                    className="media-editor__tag-value-input"
+                    type="text"
+                    placeholder="valor"
+                    value={row[1]}
+                    onChange={(e) => setTag(i, 1, e.target.value)}
+                    onKeyDown={(e) => onTagValueKeyDown(e, i)}
+                  />
+                </div>
+              )}
+            </div>
+          )
+        })}
       </div>
 
       <div className="media-editor__actions">
@@ -240,4 +328,3 @@ export function MediaEditor({
     </div>
   )
 }
-
